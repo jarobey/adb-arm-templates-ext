@@ -1,0 +1,22 @@
+
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vnetId": {
+            "value": "/subscriptions/d9ebbe61-2ca0-4413-b640-b1b34d958ce1/resourceGroups/s00161nrgpnetworkingwest/providers/Microsoft.Network/virtualNetworks/s00161nvnt10"
+        },
+        "workspaceName": {
+            "value": "name-of-databricks-workspace"
+        },
+        "privateSubnetName": {
+            "value": "vnetname1"
+        },
+        "publicSubnetName": {
+            "value": "vnetname2"
+        },
+        "noPublicIp": {
+            "value": false
+        }
+    }
+}

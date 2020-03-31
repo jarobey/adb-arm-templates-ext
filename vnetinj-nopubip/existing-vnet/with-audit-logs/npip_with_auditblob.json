@@ -1,0 +1,114 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+     "vnetId": {
+       "defaultValue": "databricks-vnet",
+       "type": "string"
+     },
+     "workspaceName": {
+       "type": "string"
+     },
+     "privateSubnetName": {
+       "defaultValue": "private-subnet",
+       "type": "string"
+     },
+     "publicSubnetName": {
+       "defaultValue": "public-subnet",
+       "type": "string"
+     },
+     "noPublicIp": {
+       "defaultValue": "true",
+       "type": "bool"
+     },
+     "diagBlobId": {
+       "defaultValue": "/subscriptions/<your-subscription-id>/resourceGroups/<your-rg>/providers/Microsoft.Storage/storageAccounts/<storage-account-to-use>",
+       "type": "string"
+     },
+     "diagSettingName": {
+       "defaultValue": "enterpriseDatabricksAudits",
+       "type": "string"
+     }
+    },
+    "resources": [
+     {
+       "apiVersion": "2018-04-01",
+       "type": "Microsoft.Databricks/workspaces",
+       "location": "[resourceGroup().location]",
+       "name": "[parameters('workspaceName')]",
+       "dependsOn": [
+       ],
+       "sku": {
+        "name": "premium"
+       },
+       "comments": "Please do not use an existing resource group for ManagedResourceGroupId.",
+       "properties": {
+        "ManagedResourceGroupId": "[variables('managedResourceGroupId')]",
+        "parameters": {
+          "customVirtualNetworkId": {
+           "value": "[parameters('vnetId')]"
+          },
+          "customPublicSubnetName": {
+           "value": "[parameters('publicSubnetName')]"
+          },
+          "customPrivateSubnetName": {
+           "value": "[parameters('privateSubnetName')]"
+          },
+          "enableNoPublicIp": {
+           "value": "[parameters('noPublicIp')]"
+          }
+        }
+       }
+     },
+     {
+        "type": "providers/diagnosticSettings",
+        "apiVersion": "2017-05-01-preview",
+        "name": "[concat('Microsoft.Insights/', parameters('diagSettingName'))]",
+        "dependsOn": [
+          "[resourceId('Microsoft.Databricks/workspaces/', parameters('workspaceName'))]"
+        ],
+        "properties": {
+          "name": "[parameters('diagSettingName')]",
+          "storageAccountId": "[parameters('diagBlobId')]",
+          "logs": [{
+              "category": "clusters",
+              "enabled": true,
+              "retentionPolicy": {
+                "days": 7,
+                "enabled": true
+              }
+            },
+            {
+              "category": "accounts",
+              "enabled": true,
+              "retentionPolicy": {
+                "days": 7,
+                "enabled": true
+              }
+            },
+            {
+              "category": "workspace",
+              "enabled": true,
+              "retentionPolicy": {
+                "days": 7,
+                "enabled": true
+              }
+            },
+            {
+              "category": "notebook",
+              "enabled": true,
+              "retentionPolicy": {
+                "days": 7,
+                "enabled": true
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "variables": {
+     "managedResourceGroupId": "[concat(subscription().id, '/resourceGroups/', variables('managedResourceGroupName'))]",
+     "managedResourceGroupName": "[concat('databricks-rg-', parameters('workspaceName'), '-', uniqueString(parameters('workspaceName'), resourceGroup().id))]"
+    }
+  }
+  
